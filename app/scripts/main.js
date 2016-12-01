@@ -222,7 +222,7 @@
 
           var isSetup = setupVariables(e);
           if(isSetup) {
-            if (animate) captureFrame();
+            if (animate) window.requestAnimationFrame(captureFrame.bind(self));
             else setInterval(captureFrame.bind(self), 4);
           }
           else {
@@ -231,7 +231,7 @@
             setTimeout(function() {
               setupVariables(e);
 
-              if (animate) captureFrame();
+              if (animate) window.requestAnimationFrame(captureFrame.bind(self));
               else setInterval(captureFrame.bind(self), 4);
             }, 100);
           }
