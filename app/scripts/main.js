@@ -47,7 +47,9 @@
     var qrcodeIgnore = root.querySelector(".QRCodeSuccessDialog-ignore");
 
     var client = new QRClient();
-
+    var worker = new Worker("scripts/qrclientWorker.js");
+    var useWork = true;
+    var working = false;
     var self = this;
 
     this.currentUrl = undefined;
@@ -55,13 +57,29 @@
 
     this.detectQRCode = function(imageData, callback) {
       callback = callback || function() {};
-
-      client.decode(imageData, function(result) {
-        if(result !== undefined) {
-          self.currentUrl = result;
-        }
-        callback(result);
-      });
+      if (useWork) {
+          if (!worker.onmessage) { // register only the first time through
+            worker.onmessage = function (e) {
+              var result = e.data;
+              if(result !== undefined) {
+                self.currentUrl = result;
+              }
+              working = false;
+              callback(e.data);
+            }
+          }
+          if (!working) {
+            working = true;
+            worker.postMessage(imageData);
+          }
+      } else {
+        client.decode(imageData, function(result) {
+          if(result !== undefined) {
+            self.currentUrl = result;
+          }
+          callback(result);
+        });
+      }
     };
 
     this.showDialog = function(url) {
